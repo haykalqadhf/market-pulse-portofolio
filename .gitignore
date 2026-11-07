@@ -1,0 +1,20 @@
+
+# Node.js
+node_modules/
+dist/
+
+# Python virtual environment
+ml-backend/venv/
+ml-backend/__pycache__/
+ml-backend/*.py[cod]
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# IDE and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

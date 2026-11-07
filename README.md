@@ -1,84 +1,197 @@
 # Market Pulse 📈
+### Cryptocurrency Market Analytics & Price Forecasting Dashboard
 
-**Cryptocurrency Market Dashboard with Machine Learning Price Forecasting**
+**Market Pulse** is a full-stack web application designed to explore cryptocurrency market data and experiment with time-series-based price forecasting.
 
-Market Pulse is a full-stack cryptocurrency market analytics project that combines an interactive React dashboard with a Python-based machine learning backend.
+The project combines a React frontend with a Python Flask backend, integrating historical cryptocurrency market data from the CoinGecko API and an Auto-ARIMA forecasting model.
 
-The project integrates historical cryptocurrency market data from CoinGecko and uses **Auto-ARIMA time-series forecasting** to generate price predictions for configurable future periods.
+> **Project Status: In Development**
+>
+> Market Pulse is an ongoing personal portfolio project. Its features, forecasting methodology, and overall implementation are still being developed and refined.
 
-## ✨ Key Features
+---
 
-- **Cryptocurrency Market Dashboard** — Explore cryptocurrency market information through an interactive dashboard.
-- **Machine Learning Price Forecasting** — Predict future cryptocurrency prices using Auto-ARIMA.
-- **CoinGecko API Integration** — Retrieve historical cryptocurrency price data.
-- **Configurable Forecasting Horizon** — Generate predictions for different future time periods.
-- **Automated ARIMA Parameter Selection** — Use `pmdarima.auto_arima` to identify suitable model parameters.
-- **Fallback Data Simulation** — Use simulated historical data when the API does not return price data.
-- **REST API Backend** — Expose forecasting functionality through a Flask API.
+## Overview
 
-## 🧠 Machine Learning Approach
+Cryptocurrency markets are highly dynamic and influenced by numerous factors, including market sentiment, trading activity, macroeconomic conditions, regulations, and unexpected events.
 
-Market Pulse uses **Auto-ARIMA**, a time-series forecasting approach designed to model sequential numerical data.
+Market Pulse explores how historical price data can be processed and used to generate experimental forecasts through statistical time-series modeling.
 
-Instead of manually selecting all ARIMA parameters, the backend uses `pmdarima.auto_arima` to search for suitable model configurations based on historical cryptocurrency prices.
+Rather than presenting predictions as guaranteed future prices, this project aims to demonstrate the practical implementation of data retrieval, backend processing, and forecasting techniques in a financial application.
 
-### Forecasting Workflow
+## Key Features
 
-1. Receive a cryptocurrency identifier and prediction horizon.
+- **Market Data Integration** — Retrieves historical cryptocurrency price data using the CoinGecko API.
+- **Time-Series Forecasting** — Generates experimental price forecasts using an Auto-ARIMA model.
+- **Flexible Forecasting Horizons** — Supports configurable prediction periods through API parameters.
+- **Automated Model Selection** — Uses `pmdarima.auto_arima` to search for suitable ARIMA parameters.
+- **Fallback Data Mechanism** — Generates simulated historical data when the external market data API does not return the expected price data.
+- **Frontend–Backend Integration** — Connects the React application with a Python Flask REST API.
+
+## Technology Stack
+
+| Category | Technology |
+|---|---|
+| Frontend | React, JavaScript |
+| Development & Build Tool | Vite |
+| Backend | Python, Flask |
+| Machine Learning / Forecasting | ARIMA, Auto-ARIMA |
+| Data Processing | NumPy, Pandas |
+| Forecasting Library | pmdarima |
+| Market Data Source | CoinGecko API |
+| HTTP Requests | Requests |
+| Cross-Origin Communication | Flask-CORS |
+| Version Control | Git & GitHub |
+
+## Forecasting Methodology
+
+### Why ARIMA?
+
+Selecting a forecasting model for cryptocurrency prices requires careful consideration.
+
+Cryptocurrency markets are highly volatile and influenced by real-time information. Historical price patterns alone cannot fully represent market behavior, making consistently accurate price forecasting a challenging problem.
+
+For this project, I selected **Autoregressive Integrated Moving Average (ARIMA)** as an initial time-series forecasting approach.
+
+The decision was based on several considerations:
+
+1. **Historical Pattern Analysis**
+
+   ARIMA is designed for sequential time-series data. It analyzes relationships between previous observations and uses historical patterns to estimate future values.
+
+2. **A Practical Baseline Model**
+
+   ARIMA provides a relatively straightforward baseline before experimenting with more complex approaches such as LSTM or other machine learning models. It helps establish whether historical price information contains useful temporal patterns.
+
+3. **Computational Efficiency**
+
+   Compared with many deep learning approaches, ARIMA is relatively lightweight and does not require extensive neural network training infrastructure.
+
+4. **Interpretability**
+
+   Its three main components provide a structured statistical foundation:
+   - **AR (Autoregressive):** Uses previous observations.
+   - **I (Integrated):** Applies differencing to address non-stationary time-series data.
+   - **MA (Moving Average):** Uses previous forecast errors to model the series.
+
+5. **Automated Parameter Selection**
+
+   The project uses `pmdarima.auto_arima` to search for suitable model parameters, reducing the need to manually specify the ARIMA configuration.
+
+### Current Implementation
+
+The forecasting pipeline currently follows these steps:
+
+1. Receive a cryptocurrency identifier and requested forecasting horizon.
 2. Retrieve historical price data from CoinGecko.
-3. Prepare historical prices as a time-series dataset.
-4. Automatically select ARIMA parameters.
-5. Generate future price predictions.
-6. Return the forecast results as JSON.
+3. Prepare the historical prices as a sequential time series.
+4. Train an Auto-ARIMA model using the historical price observations.
+5. Generate future price estimates for the requested number of days.
+6. Return the forecast results through a Flask REST API.
 
-### Historical Data Configuration
+The current implementation uses non-seasonal ARIMA and a stepwise parameter search.
 
-| Forecast Horizon | Historical Data Used |
-|---|---:|
-| 7 days or less | 60 days |
+### Forecasting Limitations
+
+ARIMA is not intended to predict every factor affecting cryptocurrency markets.
+
+The current implementation has several limitations:
+
+- It primarily relies on historical price observations.
+- It does not incorporate news sentiment, trading volume, market liquidity, technical indicators, or macroeconomic variables.
+- Sudden market events and structural changes can significantly reduce forecasting reliability.
+- A model selected using historical data does not guarantee accurate future predictions.
+- Forecasting performance has not yet been established through a comprehensive out-of-sample evaluation.
+
+For these reasons, Market Pulse treats its forecasts as **experimental estimates rather than financial advice or guaranteed investment signals**.
+
+## API Reference
+
+The Flask backend currently exposes the following endpoint:
+
+### Price Forecasting
+
+```http
+GET /api/predict/<coin_id>?days=<number>
+```
+
+**Parameters**
+
+| Parameter | Description | Example |
+|---|---|---|
+| `coin_id` | Cryptocurrency identifier used by CoinGecko | `bitcoin` |
+| `days` | Number of days to forecast | `7`, `30`, `60` |
+
+**Example Request**
+
+```http
+GET /api/predict/bitcoin?days=7
+```
+
+**Example Response**
+
+```json
+{
+  "status": "success",
+  "coin": "bitcoin",
+  "predict_days": 7,
+  "forecast": [
+    {
+      "date": "Nov 08",
+      "predicted_price": 68000.0
+    }
+  ],
+  "is_simulated": false
+}
+```
+
+*The response above is illustrative. Actual forecast values depend on the retrieved data and model output.*
+
+**Historical Data Configuration**
+
+The backend currently selects its historical data window based on the requested forecast horizon:
+
+| Forecast Horizon | Historical Data |
+|---|---|
+| Up to 7 days | 60 days |
 | 8–30 days | 180 days |
 | More than 30 days | 730 days |
 
-**Note:** Cryptocurrency prices are highly volatile. Forecasts are experimental estimates, not financial advice or guaranteed future prices.
+If the expected price data is unavailable from CoinGecko, the backend generates simulated data as a fallback. The `is_simulated` response field indicates whether this mechanism was used.
 
-## 🛠️ Tech Stack
-
-| Category | Technologies |
-|---|---|
-| Frontend | React, JavaScript |
-| Build Tool | Vite |
-| Styling | Tailwind CSS |
-| Data Visualization | Recharts |
-| HTTP Client | Axios |
-| Backend | Python, Flask |
-| Machine Learning | Auto-ARIMA, pmdarima |
-| Data Processing | NumPy, Pandas |
-| Market Data | CoinGecko API |
-| Version Control | Git, GitHub |
-
-## 📁 Project Structure
+## Project Structure
 
 ```text
 market-pulse-portofolio/
+│
 ├── ml-backend/
-│   └── app.py             # Flask API and forecasting logic
-├── src/                   # React frontend
+│   └── app.py
+│
+├── src/
+│   └── ...                 # React application source
+│
+├── public/
+│   └── ...                 # Public frontend assets
+│
 ├── index.html
 ├── package.json
 ├── package-lock.json
 ├── vite.config.js
-├── tailwind.config.js
-├── postcss.config.js
+├── .gitignore
 └── README.md
 ```
 
-## 🚀 Getting Started
+*The structure above provides a high-level overview. Additional components and files may be added as development progresses.*
+
+## Getting Started
 
 ### Prerequisites
 
-- Node.js and npm
-- Python 3
-- Git
+Make sure the following tools are installed:
+
+- [Node.js](https://nodejs.org/)
+- npm
+- [Python 3](https://www.python.org/)
 
 ### 1. Clone the Repository
 
@@ -87,29 +200,27 @@ git clone https://github.com/haykalqadhf/market-pulse-portofolio.git
 cd market-pulse-portofolio
 ```
 
-### 2. Set Up the Frontend
-
-Install dependencies:
+### 2. Install Frontend Dependencies
 
 ```bash
 npm install
 ```
 
-Start the development server:
+### 3. Start the Frontend
 
 ```bash
 npm run dev
 ```
 
-Open the local URL provided by Vite, usually:
+Open the local development URL provided by Vite, typically:
 
 ```text
 http://localhost:5173
 ```
 
-### 3. Set Up the Python Backend
+### 4. Set Up the Python Backend
 
-Navigate to the backend directory:
+Open another terminal:
 
 ```bash
 cd ml-backend
@@ -127,16 +238,16 @@ Activate it on Windows:
 venv\Scripts\activate
 ```
 
-On macOS or Linux:
+Activate it on macOS/Linux:
 
 ```bash
 source venv/bin/activate
 ```
 
-Install the required Python packages:
+Install the backend dependencies:
 
 ```bash
-pip install Flask Flask-Cors requests numpy pandas pmdarima
+pip install Flask flask-cors requests numpy pandas pmdarima
 ```
 
 Start the Flask server:
@@ -145,66 +256,42 @@ Start the Flask server:
 python app.py
 ```
 
-The backend will run at:
+The backend will run on:
 
 ```text
 http://localhost:5000
 ```
 
-## 🔌 API Reference
+The forecasting endpoint can then be accessed at:
 
-### Cryptocurrency Price Prediction
-
-**Endpoint**
-
-```http
-GET /api/predict/<coin_id>
+```text
+http://localhost:5000/api/predict/bitcoin?days=7
 ```
 
-**Query Parameters**
+---
 
-| Parameter | Description | Example |
-|---|---|---|
-| `coin_id` | Cryptocurrency identifier used by CoinGecko | `bitcoin` |
-| `days` | Number of days to forecast | `7` |
+## Development Roadmap
 
-**Example Request**
+Market Pulse is still evolving. The following improvements are planned as part of its ongoing development:
 
-```http
-GET http://localhost:5000/api/predict/bitcoin?days=7
-```
+- [ ] Improve forecasting evaluation using MAE, RMSE, and MAPE.
+- [ ] Introduce chronological train-test splitting and out-of-sample validation.
+- [ ] Compare ARIMA performance against baseline forecasting methods.
+- [ ] Explore additional forecasting approaches such as LSTM and XGBoost.
+- [ ] Investigate the integration of trading volume and technical indicators.
+- [ ] Explore sentiment analysis and other external market information.
+- [ ] Improve error handling and API reliability.
+- [ ] Refine the user interface and overall dashboard experience.
 
-**Example Response**
+## Disclaimer
 
-```json
-{
-  "status": "success",
-  "coin": "bitcoin",
-  "predict_days": 7,
-  "forecast": [
-    {
-      "date": "Oct 10",
-      "predicted_price": 65000.0
-    }
-  ],
-  "is_simulated": false
-}
-```
+Market Pulse is an experimental portfolio and learning project.
 
-*The response values above are illustrative and do not represent actual market predictions.*
+Cryptocurrency price forecasts are inherently uncertain. The displayed estimates are generated from historical data and should not be interpreted as financial advice, investment recommendations, or guarantees of future market performance.
 
-## 📌 Project Purpose
+Simulated data may be used when external market data is unavailable.
 
-This project was developed as part of my portfolio to demonstrate practical experience in:
-
-- Full-stack web application development
-- REST API integration
-- Time-series forecasting
-- Machine learning implementation
-- Data processing and visualization
-- Frontend and backend integration
-
-## 👨‍💻 Author
+## Author
 
 **Haykal Qadhf**
 
@@ -213,4 +300,4 @@ This project was developed as part of my portfolio to demonstrate practical expe
 
 ---
 
-*Developed as a portfolio project exploring cryptocurrency analytics and machine learning.*
+*Developed as an ongoing exploration of full-stack development, financial data processing, and time-series forecasting.*
